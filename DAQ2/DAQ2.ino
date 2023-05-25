@@ -13,7 +13,9 @@
 const float m = 0.8983353362875;
 const float b = 10.1202308420759;
 
-
+unsigned long mins;
+unsigned long secs;
+unsigned long run_time = millis();
 
 const char messages[4][16] = {
   "Good Luck Aoife",
@@ -21,14 +23,14 @@ const char messages[4][16] = {
   "Be Efficient!",
   "Nite @ Museum 2"
 };
-const float wheelDiam = 0.52; //in meters
+const float wheelDiam = 0.5; //in meters
 
 float circ = wheelDiam * 3.1415;
 
 // digital pin 2 is the hall pin
 const int hall_pin = 2;
 // set number of hall trips for RPM reading (higher improves accuracy)
-const int hall_thresh = 3;
+const int hall_thresh = 1;
 
 
 float RPM = 0;
@@ -42,8 +44,8 @@ void setup()
 {
   randomSeed(analogRead(0));
   pinMode(hall_pin, INPUT_PULLUP);
-  lcd.init();                      // initialize the lcd
-  lcd.init();
+  //lcd.init();                      // initialize the lcd
+  lcd.begin();
   // Print a message to the LCD.
   lcd.backlight();
   lcd.setCursor(0, 0);
@@ -76,29 +78,41 @@ void loop()
     } else {
       on_state = false;
     }
-    delay(1);
+    delay(10);
   }
   unsigned long end_time = micros();
   unsigned long time_passed_us = end_time - start;
   float time_passed = (time_passed_us / 1000000.0);
   RPM = (hall_count / time_passed) * 60.0;
-  RPM = fixRPM(RPM);
-  velocity = RPM * circ * 60.0 / 1000.0;
+//  RPM = fixRPM(RPM);
+  velocity = (RPM * circ * 60.0) / 1000.0;
+  
   lcd.clear();
+  
   lcd.setCursor(0, 0);
-
-  #ifdef DEBUG
-  lcd.print("RPM: ");
-  lcd.print(RPM);
-  lcd.setCursor(0, 1);
-  #endif
   lcd.print(velocity);
   lcd.print("km/h");
+  
+  lcd.setCursor(0, 1);
+  run_time = millis();
+  secs = run_time/1000;
+  mins = secs/60;
+  secs %= 60;
+  mins %= 60;
+  if (mins < 10) {
+    lcd.print('0');
+  }
+  lcd.print(mins);
+  lcd.print(':');
+  if (secs < 10) {
+    lcd.print('0');
+  }
+  lcd.print(secs);  
 
-  delay(1);
+  delay(5);
 }
 
-float fixRPM(float raw_RPM){
-  float fixed = m * raw_RPM + b;
-  return fixed;
-}
+//float fixRPM(float raw_RPM){
+//  float fixed = (m * raw_RPM) + b;
+//  return fixed;
+//}
